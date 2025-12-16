@@ -1,0 +1,8 @@
+"0","#install.packages(""readr"")"
+"0",""
+"0","library(readr)"
+"0",""
+"0","tasa_mujeres <- read_csv(""datos/female-homicide-rate.csv"")"
+"0","tasa_total <- read_csv(""datos/homicide-rate-unodc.csv"")"
+"0","tasa_sexo_victimas <- read_csv(""datos/homicides-by-sex-of-the-victim.csv"")"
+"0","tasa_hombres <- read_csv(""datos/male-homicide-rate.csv"")"

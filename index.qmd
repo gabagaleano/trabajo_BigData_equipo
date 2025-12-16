@@ -1,0 +1,36 @@
+---
+title: Homicidios por el Mundo            #- Hay que cambiarlo
+image: imagenes/patitos.jpg      #- poned una foto "vuestra"
+about:
+  template: jolla        #- {jolla, solana, ...}
+  image-width: 16em         #- https://cybmeta.com/em-y-rem
+  image-shape: rectangle    #- {rectangle, round, rounded}
+  links:
+    - icon: envelope
+      text: gaba
+      url: "mailto:gabagaleano@gmail.com"
+    - icon: envelope
+      text: lou
+      url: "mailto:lbellidoalagre@gmail.com"         
+    - icon: envelope
+      text: araia
+      url: "mailto aaarcosray@hotmail.com"         
+    - icon: github
+      text: Github
+      href: https://github.com/gabagaleano         #- Github
+
+#- embeed the source document 
+code-tools: false
+---
+        
+Hola,  somos Las Divinas
+      
+Esta web sirve para presentar el trabajo en equipo para la asignatura "Programación y manejo de datos en la era Del Big Data", optativa de GECO en la Facultad de Economía de la Universitat de València.
+
+La web de la asignatura está [aquí](https://perezp44.github.io/intro-ds-25-26-web/){target="_blank"} y los trabajos de mis compañeros de curso puedes verlos [aquí](https://perezp44.github.io/intro-ds-25-26-web/05-trabajos-estudiantes.html){target="_blank"}.
+
+
+Nuestro trabajo lleva por título : "Homicidios por el Mundo". El objetivo es explorar las tasas de homicidios, controlando por variables de género y población. 
+
+
+El trabajo puede verse [aquí](my_trabajo_BigData.html){target="_blank"}, y las slides [aquí](my_slides_BigData.html){target="_blank"}.

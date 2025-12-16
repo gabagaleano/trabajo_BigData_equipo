@@ -1,0 +1,6 @@
+"0","library(tidyverse)"
+"0",""
+"0","df_generos <- left_join(tasa_hombres,tasa_mujeres)"
+"0","df_tasas <- left_join(df_generos,tasa_total)"
+"0",""
+"0","rm(df_generos, female_homicide_rate, homicide_rate_unodc, tasa_hombres, tasa_mujeres, tasa_total)"
