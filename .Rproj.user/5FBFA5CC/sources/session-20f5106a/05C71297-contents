@@ -1,0 +1,397 @@
+---
+title: "Homicidios por el Mundo"  #- título
+date: 2025-12-17              #- ISO8601 YYYY-MM-DD format 
+date-format: short
+format: 
+  revealjs:
+    transition: slide
+    transition-speed: slow
+    scrollable: true
+    slide-level: 2
+    height: 900
+    width: 1600
+    toc: false
+    center-title-slide: true
+    title-slide-attributes: #- atributos para la slide de titulo
+      data-background-color: "#e8d8c4"   #- color de R-ladies
+    preview-links: auto  #- true: abre un iframe en lugar de abrir ventana
+    link-external-newwindow: true
+    fontcolor: "#38040E"
+    highlight-style: a11y
+    code-line-numbers: true
+    number-sections: false
+    slide-number: c/t  
+    incremental: false   
+footer: |
+  Slides hechas con [Quarto](https://quarto.org/) 
+theme: blood
+
+---
+## Índice
+
+:::: {.columns}
+
+::: {.column width="40%"}
+
+- Intro
+- Visión Global
+- Tendencias
+- Mapas
+- Víctimas Globales por Sexo
+- Conclusiones
+
+:::
+
+::: {.column width="60%"}
+
+![](https://c.tenor.com/6Ry1LJCG9F0AAAAC/scooby-doo-scooby.gif)
+
+:::
+
+::: 
+
+---
+
+## Intro 
+
+. . .
+
+Vamos a utilizar datos de "Our World in Data", enfocándonos en los datasets que contienen el país, código, tasa de homicidio como porcentaje de la población, la misma por género, luego por género de la víctima y en relación al PIB per capita.
+
+Los datos se pueden cargar en la memoria de de R/RStudio de esta forma:
+
+. . .
+
+
+```{r}
+#install.packages("readr")
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(patchwork)
+library(ggplot2)
+library(gghighlight) #install.packages(gghighlight)
+library(paletteer)
+
+
+tasa_mujeres <- read_csv("datos/female-homicide-rate.csv")
+tasa_total <- read_csv("datos/homicide-rate-unodc.csv")
+tasa_sexo_victimas <- read_csv("datos/homicides-by-sex-of-the-victim.csv")
+tasa_hombres <- read_csv("datos/male-homicide-rate.csv")
+
+
+df_generos <- left_join(tasa_hombres,tasa_mujeres)
+df_tasas <- left_join(df_generos,tasa_total)
+
+rm(df_generos, female_homicide_rate, homicide_rate_unodc, tasa_hombres, tasa_mujeres, tasa_total)
+
+names(df_tasas)
+
+df_tasas <- df_tasas %>%
+  rename(female = "Homicide rate per 100,000 population - sex: Female - age: Total") %>%
+  rename (male = "Homicide rate per 100,000 population - sex: Male - age: Total" ) %>%
+  rename (total = "Homicide rate per 100,000 population - sex: Total - age: Total")
+
+names(tasa_sexo_victimas)
+
+tasa_sexo_victimas <- tasa_sexo_victimas %>%
+  rename(female = "Homicides - sex: Female - age: Total") %>%
+  rename (male = "Homicides - sex: Male - age: Total" )
+
+```
+
+
+---
+
+## Visión global
+
+. . .
+
+Para visualizar un poco los datos, vamos a realizar una tabla que nos muestre los 10 países y años en los que más homocidios han sucedido. La tasa de homicidios aparece por cada 100,000 habitantes del país.
+
+. . .
+
+
+```{r}
+#| echo: false
+
+#install.packages("gt")
+library(gt)
+
+gt_tasas <- df_tasas %>% 
+  group_by(Entity) %>% 
+  select (Entity, Code, Year, male, female, total) %>% 
+  arrange (desc(total)) %>%
+  head(10) %>% 
+  ungroup ()
+
+gt_tasas %>% 
+  gt() %>% 
+  fmt_flag(columns = Code, height = 30)
+
+```
+
+---
+
+## Tendencias
+. . .
+
+Mostramos una comparativa de tendencias por país, resaltando aquellos con tasas más elevadas.
+
+. . .
+
+```{r}
+#| include: false
+
+library(patchwork)
+library(ggplot2)
+library(gghighlight) #install.packages(gghighlight)
+library(paletteer)
+
+
+p1 <- ggplot(df_tasas,
+       aes(x = Year,
+           y = female,
+           colour = Entity)) +
+  geom_line(linewidth = 0.5) +
+  theme_gray() +
+  theme(legend.position = "none") +
+  labs(
+    x = "Años",
+    y = "Tasa de mujeres",
+    title = "Tendencia mujeres por país",
+    subtitle = "por cada 100.000 habitantes") + 
+  gghighlight(max(female) > 10, use_direct_label = TRUE) +
+    scale_colour_manual(values = paletteer_d("RColorBrewer::RdGy"))
+
+p1
+
+p2 <- ggplot(df_tasas,
+       aes(x = Year,
+           y = total,
+           colour = Entity)) +
+  geom_line(linewidth = 0.5) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  labs(
+    x = "Años",
+    y = "Tasa total",
+    title = "Tendencia total por país",
+    subtitle = "por cada 100.000 habitantes") +
+   gghighlight(max(total) > 50, use_direct_label = TRUE) +
+      scale_colour_manual(values = paletteer_d("RColorBrewer::RdGy"))
+
+
+p2
+
+p3 <- ggplot(df_tasas,
+       aes(x = Year,
+           y = male,
+           colour = Entity)) +
+  geom_line(linewidth = 0.5) +
+  theme_gray() +
+  theme(legend.position = "none") +
+  labs(
+    x = "Años",
+    y = "Tasa de hombres",
+    title = "Tendencia hombres por país",
+    subtitle = "por cada 100.000 habitantes") + 
+  gghighlight(max(male) > 80, use_direct_label = TRUE) +
+      scale_colour_manual(values = paletteer_d("RColorBrewer::RdGy"))
+
+
+p3
+
+
+paises <- c("El Salvador", "Honduras", "Colombia")
+
+paises_destacados <- df_tasas %>%
+  filter( Entity == paises)
+
+p4 <- ggplot(paises_destacados,
+       aes(x = Year,
+           y = total,
+           colour = Entity)) +
+  geom_line(linewidth = 1) +
+  theme_gray() +
+  labs(
+    x = "Años",
+    y = "Tasa total",
+    title = "Tendencia por países",
+    subtitle = "por cada 100.000 habitantes") +
+      scale_colour_manual(values = paletteer_d("RColorBrewer::RdGy"))
+```
+
+```{r}
+#| echo: false
+p4
+```
+
+---
+
+```{r}
+#| echo: false
+
+((p1 + p2 + p3) &
+   theme(plot.title = element_blank(),
+         plot.subtitle = element_blank())) +
+  plot_annotation(title = "Comparación de tendencias",
+    theme = theme(
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5))) +
+      scale_colour_manual(values = paletteer_d("RColorBrewer::RdGy"))
+
+```
+
+---
+
+## Mapas
+
+. . . 
+
+Aquí realizamos 2 mapas, uno con los valores de las tasas en el 2000, otro en el 2020.
+
+
+. . .
+
+
+```{r}
+#| echo: false
+
+library("rnaturalearth")
+library("rnaturalearthdata")
+library("ggplot2")
+library("patchwork")
+
+world <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
+  
+# Arreglamos un poco el data de donde sacamos las geometrías
+world <- world %>% 
+  # Quitamos Antarctica y Groenlandia
+  filter(subregion != "Antarctica") %>% filter(admin != "Greenland") %>% 
+  # Nos quedamos solo con las 2/3 variables que hacen falta
+  select(name, iso_a3, geometry) 
+
+# Juntamos los dfs, para tener la geometría junto con nuestro data de las tasas
+df_mapa <- world %>%
+  left_join(df_tasas, by = c("iso_a3" = "Code"))
+
+# Filtramos y creamos 2 datasets para mostrar los mapas en 2 años distintos, 2000 y 2020
+df_mapa_2000 <- df_mapa %>% filter(Year == 2000)
+df_mapa_2020 <- df_mapa %>% filter(Year == 2020)
+
+map_2000 <- ggplot(df_mapa_2000) +
+  geom_sf(aes(fill = total), color = "white", linewidth = 0.2) +
+  scale_fill_distiller(
+    palette = "RdGy",  
+    direction = 1,  
+    na.value = "grey90"
+  ) +
+  labs(title = "Tasa total por país (2000)")
+
+map_2020 <- ggplot(df_mapa_2020) +
+  geom_sf(aes(fill = total), color = "white", linewidth = 0.2) +
+  scale_fill_distiller(
+    palette = "RdGy",
+    direction = 1,
+    na.value = "grey90"
+  ) +
+  labs(title = "Tasa total por país (2020)")
+
+
+map_2000 + map_2020
+```
+
+
+---
+
+
+## Víctimas globales por sexo
+
+. . .
+
+En el siguiente gráfico mostramos las víctimas por sexo mundialmente.
+
+. . .
+
+
+
+```{r}
+#| echo: false
+mujeres <- tasa_sexo_victimas %>% 
+  group_by(Year) %>% 
+  filter(Code == "OWID_WRL") %>% 
+  filter(Year >= 2000) %>% 
+  filter(Year < 2020) %>% 
+  select(Year, female) %>% 
+  ungroup()
+
+hombres <- tasa_sexo_victimas %>% 
+  group_by(Year) %>% 
+  filter(Code == "OWID_WRL") %>% 
+  filter(Year >= 2000) %>% 
+  filter(Year < 2020) %>% 
+  select(Year, male) %>% 
+  ungroup()
+
+sexos <- ggplot() +
+  geom_point(data = mujeres, 
+             aes(x = Year, y = female, colour = "Mujeres")) + 
+  geom_line(data = mujeres, 
+            aes(x = Year, y = female, colour = "Mujeres")) + 
+  geom_point(data = hombres, 
+             aes(x = Year, y = male, colour = "Hombres")) + 
+  geom_line(data = hombres, 
+            aes(x = Year, y = male, colour = "Hombres")) +
+  labs(
+    x = "Año", 
+    y = "Tasa de homicidio global",
+    title= "Víctimas globales por sexo",
+    colour = "Sexo"
+  ) +
+    scale_colour_manual(values = paletteer_d("RColorBrewer::RdGy")) +
+  scale_y_continuous(
+    limits = c(0, NA),
+    breaks = c(1e5, 2e5, 3e5),
+    labels = c("100 mil", "200 mil", "300 mil")
+  )
+
+sexos
+
+```
+
+
+---
+
+## Conclusiones
+
+. . .
+
+Como bien hemos podido observar a lo largo del trabajo, el homicidio es una causa común de muerte que en la mayoría de países ha tenido una tasa que no podemos pasar por alto. 
+
+A continuación, haremos un **recorrido** por todo el estudio:
+
+. . .
+
+-  Top países y años en los que se han producido **más homicidios.**
+
+. . .
+
+-  Las tasas según sexos y global tienden a **decrecer** en todos los países.
+
+. . .
+
+-  En cuanto a tendencia, **Colombia y Honduras** son los países más destacados.
+
+. . .
+
+-  Existe una <u> mayor tasa de víctimas masculinas </u> debido a que los hombres están más expuestos a violencia letal asociada a conductas de riesgo. No obstante, <u> las mujeres sufren altos niveles de violencia, especialmente en el ámbito doméstico. </u>
+
+---
+
+## *Gracias por su atención*
+### Esperamos que les haya gustado.
+
+::: column-margin
+![](./imagenes/patitos.jpg){fig-align="center"}
+::: 
+
